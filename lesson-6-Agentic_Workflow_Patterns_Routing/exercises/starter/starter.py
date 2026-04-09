@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 client = OpenAI(
     base_url = "https://openai.vocareum.com/v1",
-    api_key=os.getenv("OPENAI_API_KEY"))
+    api_key=os.getenv("OPENAI_API_KEY", ""))
 
 # --- Helper Function for API Calls ---
 def call_openai(system_prompt, user_prompt, model="gpt-3.5-turbo"):
@@ -48,8 +48,16 @@ def pricing_strategist_agent(query, product_data=None, customer_data=None):
     strategies based on product research and customer analysis."""
     
     # TODO: Implement this function
+    user_prompt = f"""
+    product info: {product_data or ""}
+    ------------
+    customer analysis: {customer_data or ""} 
+    """
     # It should use product_data and customer_data to inform the pricing strategy
-    pass  # Replace this with your implementation
+    return call_openai(
+        system_prompt,
+        user_prompt,
+    )
 
 
 # --- Routing Agent with LLM-Based Task Determination ---
@@ -60,7 +68,17 @@ def routing_agent(query, *args):
     # 1. Use an LLM to analyze the query and determine the correct task type
     # 2. Route the query to the appropriate agent
     # 3. Return the results from the chosen agent
-    pass  # Replace this with your implementation
+    system_prompt = """You are a helpful AI assistant that categorizes retail-related user queries. Based on the user's query, determine if it is primarily about:
+        * "product research" (e.g., asking for product specs, trends, competitor prices)
+        * "customer analysis" (e.g., asking about customer feedback, preferences, purchase patterns)
+        * "pricing strategy" (e.g., asking for optimal pricing for a product)
+        Respond only with one of these exact phrases: "product research", "customer analysis", or "pricing strategy".
+    """
+    user_prompt = f"query: {query}"
+    return call_openai(
+        system_prompt,
+        user_prompt,
+    )
 
 
 # --- Example Usage ---
@@ -78,4 +96,19 @@ if __name__ == "__main__":
         print("\nProcessing...")
         
         # TODO: Use the routing agent to process the query
-        # Print the results
+        task_type = routing_agent(query).replace("\"", "")
+        product_context_query = query
+        customer_context_query = query
+        if task_type == "product research":
+            print("  -> Calling Product Researcher Agent...")
+            product_info = product_researcher_agent(product_context_query)
+            continue
+        elif task_type == "customer analysis":
+            print("  -> Calling Customer Analyzer Agent...")
+            customer_info = customer_analyzer_agent(customer_context_query)
+            continue
+        elif task_type == "pricing strategy":
+            print("  -> Calling Pricing Strategist Agent with gathered data...")
+            print(pricing_strategist_agent(query, product_info, customer_info))
+        else:
+            print("Unknow Type of task", task_type)

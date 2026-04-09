@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 client = OpenAI(
     base_url = "https://openai.vocareum.com/v1",
-    api_key=os.getenv("OPENAI_API_KEY"))
+    api_key=os.getenv("OPENAI_API_KEY", ""))
 
 # === Utility Functions ===
 
@@ -71,10 +71,13 @@ You are a hematology analysis expert. Your task is to interpret the blood count 
 Main Task: {original_task}
 Your Subtask: {task_description}
 
-<response>
 - Explain the purpose of analyzing these blood values.
 - Identify any out-of-range values (e.g., high/low RBC, WBC, Platelets).
 - Briefly note the potential clinical significance of any abnormalities.
+
+OUTPUT FORMAT:
+<response>
+[Your response here]
 </response>
 """
         raw_output = llm_call(prompt)
@@ -89,10 +92,13 @@ You are a renal function analysis expert. Your task is to interpret the kidney-r
 Main Task: {original_task}
 Your Subtask: {task_description}
 
-<response>
 - Explain the purpose of analyzing these kidney markers.
 - Identify any out-of-range values (e.g., Creatinine, BUN, GFR).
 - Briefly note the potential clinical significance of any abnormalities.
+
+OUTPUT FORMAT:
+<response>
+[Your response here]
 </response>
 """
         raw_output = llm_call(prompt)
@@ -107,13 +113,17 @@ You are a liver function analysis expert. Your task is to interpret the liver en
 Main Task: {original_task}
 Your Subtask: {task_description}
 
-<response>
 - Explain the purpose of analyzing these liver enzymes.
-- Identify any out-of-range values (e.g., ALT, AST, ALP).
-- Briefly note the potential clinical significance of any abnormalities.
+- Identify and list any out-of-range values (e.g., ALT, AST, ALP).
+- for each out-of-range value Briefly note the potential clinical significance.
+
+OUTPUT FORMAT:
+<response>
+[Your response here]
 </response>
 """
         raw_output = llm_call(prompt)
+        print(raw_output)
         return extract_xml(raw_output, "response")
 
 # === Orchestrator ===
@@ -136,8 +146,13 @@ class Orchestrator:
         type_lower = task_type.lower()
         
         # TODO: Implement the logic to return the correct agent.
+        if "hematology" in type_lower:
+            return HematologyAgent(task_type)
+        if "renal" in type_lower:
+            return RenalFunctionAgent(task_type)
+        if "liver" in type_lower:
+            return LiverFunctionAgent(task_type)
         
-
         # If no match is found, it's good practice to raise an error.
         raise ValueError(f"No worker agent configured for task type: {task_type}")
 
@@ -186,6 +201,8 @@ Provide a high-level summary of the lab panels present and the overall goal of t
 
 <tasks>
 Provide one <task> entry for each major lab panel found in the data. Each task must have a <type> and a <description>.
+<type> must be in one word: 
+e.g.: type for Complete Blood Count (CBC) is hematology, type for kidney-related in renal, type for liver related in liver
 Example task format:
 <task>
   <type>hematology</type>
