@@ -21,11 +21,7 @@ class DirectPromptAgent:
         # Generate a response using the OpenAI API
         client = OpenAI(base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key)
         response = client.chat.completions.create(
-<<<<<<< HEAD
             model=self.model,
-=======
-            model=self.model
->>>>>>> 0b91bff9312003e6dfedd60283fafa42c8832ec6
             messages=[
                 # TODO: 4 - Provide the user's prompt here. Do not add a system prompt.
                 {"role": "user", "content": prompt},
@@ -273,10 +269,6 @@ class EvaluationAgent:
                 model="gpt-3.5-turbo",
                 # TODO: 5 - Define the message structure sent to the LLM for evaluation (use temperature=0)
                 messages=[
-<<<<<<< HEAD
-=======
-                    {"role": "system", "content": "You are an evaluation assiant who juges if an answer meets some given criteria"},
->>>>>>> 0b91bff9312003e6dfedd60283fafa42c8832ec6
                     {"role": "user", "content": eval_prompt},
                 ],
                 temperature=0,
@@ -316,11 +308,7 @@ class EvaluationAgent:
             # TODO: 7 - Return a dictionary containing the final response, evaluation, and number of iterations
             'final_response': response_from_worker,
             'evaluation': evaluation,
-<<<<<<< HEAD
             'iterations_number': interaction_count
-=======
-            'eterations': interaction_count
->>>>>>> 0b91bff9312003e6dfedd60283fafa42c8832ec6
         }   
 
 
@@ -384,20 +372,12 @@ class ActionPlanningAgent:
     def extract_steps_from_prompt(self, prompt):
 
         # TODO: 2 - Instantiate the OpenAI client using the provided API key
-<<<<<<< HEAD
         client = OpenAI(base_url="https://openai.vocareum.com/v1", api_key=self.openai_api_key)
-=======
-        client = OpenAI(api_key=self.openai_api_key)
->>>>>>> 0b91bff9312003e6dfedd60283fafa42c8832ec6
         # TODO: 3 - Call the OpenAI API to get a response from the "gpt-3.5-turbo" model.
         # Provide the following system prompt along with the user's prompt:
         # "You are an action planning agent. Using your knowledge, you extract from the user prompt the steps requested to complete the action the user is asking for. You return the steps as a list. Only return the steps in your knowledge. Forget any previous context. This is your knowledge: {pass the knowledge here}"
         system_prompt = f"You are an action planning agent. Using your knowledge, you extract from the user prompt the steps requested to complete the action the user is asking for. You return the steps as a list. Only return the steps in your knowledge. Forget any previous context. This is your knowledge: {self.knowledge}"
-<<<<<<< HEAD
         response = client.chat.completions.create(
-=======
-        response = client.chat.completion.create(
->>>>>>> 0b91bff9312003e6dfedd60283fafa42c8832ec6
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": system_prompt},
